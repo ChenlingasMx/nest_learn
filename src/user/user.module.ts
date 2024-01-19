@@ -5,5 +5,7 @@ import { UserController } from './user.controller';
 @Module({
   controllers: [UserController],
   providers: [UserService],
+  // 导出UserService
+  exports: [UserService],
 })
 export class UserModule {}

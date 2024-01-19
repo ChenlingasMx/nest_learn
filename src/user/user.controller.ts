@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   Res,
+  Inject,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,7 +16,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as svgCaptcha from 'svg-captcha';
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject('Global') private readonly base: string,
+  ) {}
 
   @Get('code')
   createCaptcha(@Req() req, @Res() res) {
@@ -56,7 +60,7 @@ export class UserController {
   @Get()
   // @Version('1')
   findAll() {
-    return this.userService.findAll();
+    return this.base;
   }
 
   @Get(':id')
