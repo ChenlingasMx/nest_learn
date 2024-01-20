@@ -27,7 +27,7 @@ async function bootstrap() {
   // app.enableVersioning({
   //   type: VersioningType.URI,
   // });
-  app.useStaticAssets(join(__dirname, 'images'));
+  app.useStaticAssets(join(__dirname, './public'));
   // app.use(Middleware);
   app.use(
     session({
