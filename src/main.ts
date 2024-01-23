@@ -5,6 +5,10 @@ import { AppModule } from './app.module';
 import * as session from 'express-session';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+// 自定义响应拦截器
+import { Response } from './common/response';
+// 自定义异常过滤器
+import { HttpFilter } from './common/filter';
 // 解决跨域中间件
 // import * as cors from 'cors';
 
@@ -37,6 +41,10 @@ async function bootstrap() {
       cookie: { maxAge: null },
     }),
   );
+  // 全局拦截器
+  app.useGlobalInterceptors(new Response());
+  // 全局异常过滤器
+  app.useGlobalFilters(new HttpFilter());
   await app.listen(3000);
 }
 bootstrap();
