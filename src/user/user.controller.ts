@@ -61,7 +61,7 @@ export class UserController {
   @Get()
   // @Version('1')
   findAll() {
-    return this.base;
+    return this.userService.reptile();
   }
 
   @Get(':id')
