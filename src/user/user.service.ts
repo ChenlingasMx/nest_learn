@@ -5,13 +5,23 @@ import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { UsersrDocument } from './schemas/user.schema';
+
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectModel('UsersSchema') private user: Model<UsersrDocument>,
+  ) {}
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
 
   async findAll() {
+    const data = await this.user.find();
+    console.log('data', data);
     return `user 模块的service`;
   }
 

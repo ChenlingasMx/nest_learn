@@ -10,6 +10,9 @@ import { Response } from './common/response';
 // 自定义异常过滤器
 import { HttpFilter } from './common/filter';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+// 全局守卫
+// import { UserGuard } from './user/guard/role.guard';
 // 解决跨域中间件
 // import * as cors from 'cors';
 
@@ -50,13 +53,25 @@ async function bootstrap() {
       cookie: { maxAge: null },
     }),
   );
-
+  // 启用 CORS
   // 注册全局拦截器
   app.useGlobalInterceptors(new Response());
   // 注册全局异常过滤器
   app.useGlobalFilters(new HttpFilter());
   // 注册全局DTO验证管道
   app.useGlobalPipes(new ValidationPipe());
+
+  // 全局守卫
+  // app.useGlobalGuards(new UserGuard());
+
+  const options = new DocumentBuilder()
+    .setTitle('接口文档')
+    .setDescription('描述...')
+    .setVersion('1')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('/api-docs', app, document);
+
   await app.listen(3000);
 }
 bootstrap();

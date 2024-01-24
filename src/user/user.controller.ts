@@ -10,12 +10,19 @@ import {
   Res,
   Inject,
   ParseFloatPipe,
+  // UseGuards,
+  // SetMetadata,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as svgCaptcha from 'svg-captcha';
+import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
+// 守卫
+// import { UserGuard } from './guard/role.guard';
 @Controller('user')
+@ApiTags('用户接口')
+// @UseGuards(UserGuard)
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -23,6 +30,7 @@ export class UserController {
   ) {}
 
   @Get('code')
+  @ApiOperation({ summary: '获取验证码', description: '请求该接口获取验证码' })
   createCaptcha(@Req() req, @Res() res) {
     const captcha = svgCaptcha.create({
       size: 4, //生成几个验证码
@@ -59,12 +67,14 @@ export class UserController {
   }
 
   @Get()
+  // @SetMetadata('role', ['admin'])
   // @Version('1')
   findAll() {
-    return this.userService.reptile();
+    return this.userService.findAll();
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', description: '用户id', required: true })
   // 管道转换数据类型
   findOne(@Param('id', ParseFloatPipe) id: number) {
     return this.userService.findOne(+id);
