@@ -8,11 +8,13 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { Logger } from '../middleware';
 import { UsersSchema } from './schemas/user.schema';
+import { TagsSchema } from './schemas/tags.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'users', schema: UsersSchema }]),
+    MongooseModule.forFeature([{ name: 'tags', schema: TagsSchema }]),
   ],
   controllers: [UserController],
   providers: [UserService],

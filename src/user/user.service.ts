@@ -13,10 +13,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('users') private users: Model<UsersrDocument>) {}
+  constructor(
+    @InjectModel('users') private users: Model<UsersrDocument>,
+    @InjectModel('tags') private tags: Model<UsersrDocument>,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
-    await this.users.create({ ...createUserDto, userId: uuidv4() });
+    // 查询当前用户表的数据数量
+    const userCount = await this.users.countDocuments();
+    await this.users.create({ ...createUserDto, userId: userCount + 1 });
     return null;
   }
 
@@ -32,7 +37,33 @@ export class UserService {
     // 计算跳过的文档数量，以及限制返回的文档数量
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
-    const data = await this.users.find(filter).skip(skip).limit(limit);
+    const data = await this.users.aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $lookup: {
+          from: 'tags', // The name of the tags collection
+          localField: 'userId',
+          foreignField: 'userId',
+          as: 'tags',
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          desc: 1,
+          userId: 1,
+          tags: '$tags', // Adjust based on your actual schema
+        },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: Number(limit),
+      },
+    ]);
     return data;
   }
 
@@ -48,6 +79,30 @@ export class UserService {
   async remove(userId) {
     await this.users.findOneAndDelete({ userId: userId });
     return null;
+  }
+
+  async addTags(params: { tags: string[]; userId: string }) {
+    const { userId, tags = [] } = params;
+    // 获取user信息
+    const userInfo = await this.users.findOne({ userId: userId });
+    let tagsList = [];
+    for (let i = 0; i < tags.length; i++) {
+      let params = {
+        name: tags[i],
+        userId: userId,
+      };
+      const existingTag = await this.tags.findOne(params);
+      if (!existingTag) {
+        this.tags.create(params);
+      } else {
+      }
+      tagsList.push(tags[i]);
+    }
+    // 移除不在传入标签列表中的旧标签
+    await this.tags.deleteMany({ userId: userId, name: { $nin: tagsList } });
+
+    userInfo.tags = tagsList;
+    await this.users.findOneAndUpdate({ userId: userId }, userInfo);
   }
 
   // 爬虫

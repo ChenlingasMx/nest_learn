@@ -91,4 +91,9 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
+
+  @Post('/add/tags')
+  addTags(@Body() params: { tags: string[]; userId:string }) {
+    return this.userService.addTags(params);
+  }
 }
