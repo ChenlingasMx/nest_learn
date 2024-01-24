@@ -1,40 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Query } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersrDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel('UsersSchema') private user: Model<UsersrDocument>,
-  ) {}
+  constructor(@InjectModel('users') private users: Model<UsersrDocument>) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    await this.users.create(createUserDto);
+    return null;
   }
 
-  async findAll() {
-    const data = await this.user.find();
-    console.log('data', data);
-    return `user 模块的service`;
+  async findAll(
+    @Query() query: { keyWord: string; page: number; pageSize: number },
+  ) {
+    const { keyWord, page, pageSize } = query;
+
+    // 构建查询条件
+    const filter = keyWord ? { name: { $regex: new RegExp(keyWord, 'i') } } : {};
+
+    // 计算跳过的文档数量，以及限制返回的文档数量
+    const skip = (page - 1) * pageSize;
+    const limit = pageSize;
+    const data = await this.users.find(filter).skip(skip).limit(limit);
+    return data;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id) {
+    const objectId = new mongoose.Types.ObjectId(id);
+    return await this.users.findById(objectId);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id, updateUserDto: CreateUserDto) {
+    const objectId = new mongoose.Types.ObjectId(id);
+    await this.users.findByIdAndUpdate(objectId, updateUserDto);
+    return null;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id) {
+    const objectId = new mongoose.Types.ObjectId(id);
+    await this.users.findByIdAndDelete(objectId);
+    return null;
   }
 
   // 爬虫

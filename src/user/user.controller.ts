@@ -10,6 +10,7 @@ import {
   Res,
   Inject,
   ParseFloatPipe,
+  Query,
   // UseGuards,
   // SetMetadata,
 } from '@nestjs/common';
@@ -18,6 +19,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as svgCaptcha from 'svg-captcha';
 import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { v4 as uuidv4 } from 'uuid';
+
 // 守卫
 // import { UserGuard } from './guard/role.guard';
 @Controller('user')
@@ -63,30 +66,32 @@ export class UserController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+    return this.userService.create({
+      ...createUserDto,
+    });
   }
 
   @Get()
   // @SetMetadata('role', ['admin'])
   // @Version('1')
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query() query: { keyWord: string; page: number; pageSize: number }) {
+    return this.userService.findAll(query);
   }
 
   @Get(':id')
   @ApiParam({ name: 'id', description: '用户id', required: true })
   // 管道转换数据类型
   findOne(@Param('id', ParseFloatPipe) id: number) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  update(@Param('id') id, @Body() updateUserDto: CreateUserDto) {
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }

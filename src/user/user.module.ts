@@ -12,7 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'UsersSchema', schema: UsersSchema }]),
+    MongooseModule.forFeature([{ name: 'users', schema: UsersSchema }]),
   ],
   controllers: [UserController],
   providers: [UserService],
