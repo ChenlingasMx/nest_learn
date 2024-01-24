@@ -8,4 +8,7 @@ export class CreateUserDto {
 
   @ApiProperty({ description: '描述', example: '1234' })
   desc: string;
+
+  @ApiProperty({ description: '用户id', example: '1234' })
+  userId: string;
 }

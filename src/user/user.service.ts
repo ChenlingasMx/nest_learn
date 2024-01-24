@@ -9,13 +9,14 @@ import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersrDocument } from './schemas/user.schema';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel('users') private users: Model<UsersrDocument>) {}
 
   async create(createUserDto: CreateUserDto) {
-    await this.users.create(createUserDto);
+    await this.users.create({ ...createUserDto, userId: uuidv4() });
     return null;
   }
 
@@ -25,8 +26,9 @@ export class UserService {
     const { keyWord, page, pageSize } = query;
 
     // 构建查询条件
-    const filter = keyWord ? { name: { $regex: new RegExp(keyWord, 'i') } } : {};
-
+    const filter = keyWord
+      ? { name: { $regex: new RegExp(keyWord.replace(/\s+/g, '\\s*'), 'i') } }
+      : {};
     // 计算跳过的文档数量，以及限制返回的文档数量
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
@@ -34,20 +36,17 @@ export class UserService {
     return data;
   }
 
-  async findOne(id) {
-    const objectId = new mongoose.Types.ObjectId(id);
-    return await this.users.findById(objectId);
+  async findOne(userId) {
+    return await this.users.findOne({ userId: userId });
   }
 
-  async update(id, updateUserDto: CreateUserDto) {
-    const objectId = new mongoose.Types.ObjectId(id);
-    await this.users.findByIdAndUpdate(objectId, updateUserDto);
+  async update(userId, updateUserDto: CreateUserDto) {
+    await this.users.findOneAndUpdate({ userId: userId }, updateUserDto);
     return null;
   }
 
-  async remove(id) {
-    const objectId = new mongoose.Types.ObjectId(id);
-    await this.users.findByIdAndDelete(objectId);
+  async remove(userId) {
+    await this.users.findOneAndDelete({ userId: userId });
     return null;
   }
 

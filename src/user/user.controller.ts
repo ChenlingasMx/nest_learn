@@ -20,7 +20,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as svgCaptcha from 'svg-captcha';
 import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
-
 // 守卫
 // import { UserGuard } from './guard/role.guard';
 @Controller('user')
@@ -66,9 +65,7 @@ export class UserController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create({
-      ...createUserDto,
-    });
+    return this.userService.create({ ...createUserDto, userId: uuidv4() });
   }
 
   @Get()
