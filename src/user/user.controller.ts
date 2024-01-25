@@ -11,89 +11,44 @@ import {
   Inject,
   ParseFloatPipe,
   Query,
-  // UseGuards,
-  // SetMetadata,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import * as svgCaptcha from 'svg-captcha';
-import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { v4 as uuidv4 } from 'uuid';
-// 守卫
-// import { UserGuard } from './guard/role.guard';
+import { ApiTags, ApiParam } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+
 @Controller('user')
 @ApiTags('用户接口')
-// @UseGuards(UserGuard)
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    @Inject('Global') private readonly base: string,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  @Get('code')
-  @ApiOperation({ summary: '获取验证码', description: '请求该接口获取验证码' })
-  createCaptcha(@Req() req, @Res() res) {
-    const captcha = svgCaptcha.create({
-      size: 4, //生成几个验证码
-      fontSize: 50, //文字大小
-      width: 100, //宽度
-      height: 34, //高度
-      background: '#cc9966', //背景颜色
-    });
-    console.log('captcha', captcha);
-    req.session.code = captcha.text; //存储验证码记录到session
-    res.type('image/svg+xml');
-    res.send(captcha.data);
-  }
-
-  @Post('create')
-  createUser(@Req() req, @Body() body) {
-    console.log(req.session.code, body);
-    if (
-      req.session.code.toLocaleLowerCase() === body?.code?.toLocaleLowerCase()
-    ) {
-      return {
-        message: '验证码正确',
-      };
-    } else {
-      return {
-        message: '验证码错误',
-      };
-    }
-  }
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create({ ...createUserDto, userId: uuidv4() });
+  @Post('signup')
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create({ ...createUserDto });
   }
 
   @Get()
-  // @SetMetadata('role', ['admin'])
-  // @Version('1')
-  findAll(@Query() query: { keyWord: string; page: number; pageSize: number }) {
-    return this.userService.findAll(query);
+  @UseGuards(AuthGuard('local'))
+  findAll() {
+    return '查询用户列表';
   }
 
   @Get(':id')
-  @ApiParam({ name: 'id', description: '用户id', required: true })
-  // 管道转换数据类型
-  findOne(@Param('id', ParseFloatPipe) id: number) {
-    return this.userService.findOne(id);
+  @UseGuards(AuthGuard('local'))
+  findOne() {
+    return '查询单个用户';
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard('local'))
   update(@Param('id') id, @Body() updateUserDto: CreateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard('local'))
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
-  }
-
-  @Post('/add/tags')
-  addTags(@Body() params: { tags: string[]; userId:string }) {
-    return this.userService.addTags(params);
   }
 }

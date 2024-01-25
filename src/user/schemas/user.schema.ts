@@ -8,16 +8,13 @@ export type UsersrDocument = Users & Document;
 @Schema()
 export class Users extends Document {
   @Prop({ type: String })
-  name: string;
+  username: string;
 
   @Prop({ type: String })
-  desc: string;
+  password: string;
 
   @Prop({ type: String })
-  userId: string;
-
-  @Prop({ type: [String] })
-  tags: string[];
+  uuid: string;
 }
 
 //使用createForClass 生产Schema对象

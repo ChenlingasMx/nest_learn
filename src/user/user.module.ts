@@ -1,20 +1,12 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  // RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { Logger } from '../middleware';
 import { UsersSchema } from './schemas/user.schema';
-import { TagsSchema } from './schemas/tags.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'users', schema: UsersSchema }]),
-    MongooseModule.forFeature([{ name: 'tags', schema: TagsSchema }]),
   ],
   controllers: [UserController],
   providers: [UserService],
@@ -23,16 +15,4 @@ import { MongooseModule } from '@nestjs/mongoose';
 })
 
 // 注册中间件
-export class UserModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // 拦截的路由
-    consumer.apply(Logger).forRoutes('user');
-    // 具体请求方法做拦截
-    // consumer
-    //   .apply(Logger)
-    //   .forRoutes({ path: 'user', method: RequestMethod.POST });
-
-    // 拦截所有请求
-    // consumer.apply(Logger).forRoutes(UserController);
-  }
-}
+export class UserModule {}
