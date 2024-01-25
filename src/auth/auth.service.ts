@@ -1,5 +1,10 @@
-import { Injectable, NotAcceptableException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -11,20 +16,36 @@ export class AuthService {
     @InjectModel('users') private users: Model<UsersrDocument>,
     private jwtService: JwtService,
   ) {}
-  async validateUser(username, password): Promise<any> {
-    const user = await this.users.findOne({ username });
-    if (!user) return null;
-    const passwordValid = await bcrypt.compare(password, user.password);
-    if (!user) {
-      throw new NotAcceptableException('could not find the user');
+
+  // 注册
+  async signup(params) {
+    const { username, password } = params;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const findUser = await this.users.findOne({ username: username });
+    if (findUser) {
+      return '用户已存在';
     }
-    if (user && passwordValid) {
-      return user;
-    }
-    return null;
+    await this.users.create({
+      username,
+      password: hashedPassword,
+      uuid: uuidv4(),
+    });
+    return '注册成功';
   }
-  async login(user: any) {
-    const payload = { username: user.username, sub: user._id };
+
+  // 登陆
+  async login(params) {
+    const { username, password } = params;
+    const findUser = await this.users.findOne({ username: username });
+    if (!findUser) return '用户不存在';
+    // 找到了对比密码
+    const compareRes: boolean = await bcrypt.compare(
+      password,
+      findUser.password,
+    );
+    // 密码不正确
+    if (!compareRes) return '密码不正确';
+    const payload = { username: username, sub: findUser._id };
     return {
       access_token: this.jwtService.sign(payload),
     };

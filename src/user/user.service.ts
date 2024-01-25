@@ -1,27 +1,12 @@
 import { Injectable, Query } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import * as path from 'path';
-import * as fs from 'fs';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersrDocument } from './schemas/user.schema';
-import { v4 as uuidv4 } from 'uuid';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel('users') private users: Model<UsersrDocument>) {}
-
-  async create(createUserDto: CreateUserDto) {
-    const { username, password } = createUserDto;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await this.users.create({
-      username,
-      password: hashedPassword,
-      uuid: uuidv4(),
-    });
-    return null;
-  }
 
   async findAll(
     @Query() query: { keyWord: string; page: number; pageSize: number },
